@@ -1,22 +1,74 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import './App.css'; // Import custom CSS file
 
-import { useState } from 'react';
-import axios from "axios";
+const App = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [balance, setBalance] = useState('');
+  const [message, setMessage] = useState('');
 
-function App() {
-  
-  const [data, setState] = useState("");
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
+  };
 
-  const handleClick = async (e) => {
-    const response = await axios.get("http://localhost:4000/api/getdata")
-    console.log(response)
-    setState(response.data)
-  }
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleBalanceChange = (e) => {
+    setBalance(e.target.value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const userData = { username, email, password, balance };
+    axios.post('http://localhost:5000/register', userData)
+      .then((response) => {
+        console.log(response.data);
+        setMessage(`Created the user "${username}" successfully ......Balance is ₹${balance}`);
+        // Clear the form after successful registration
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setBalance('');
+      })
+      .catch((error) => {
+        console.error('Error registering user:', error);
+        setMessage('Error occured..... Please try again.');
+      });
+  };
+
   return (
-    <div>
-        <h1>{data}</h1>
-        <button onClick={handleClick}>Click me</button>
+    <div className="center-container">
+      <h2>Digital Rupee Registration Form</h2> {/* Move the heading above the form */}
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Username:</label>
+          <input type="text" value={username} onChange={handleUsernameChange} />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input type="email" value={email} onChange={handleEmailChange} />
+        </div>
+        <div>
+          <label>Password:</label>
+          <input type="password" value={password} onChange={handlePasswordChange} />
+        </div>
+        <div>
+          <label>e₹ Balance:</label>
+          <input type="number" value={balance} onChange={handleBalanceChange} />
+        </div>
+        <input type="submit" value="Submit"/>
+      </form>
+      {message && <p><b>{message}</b></p>}
     </div>
   );
-}
+};
 
 export default App;

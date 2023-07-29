@@ -1,30 +1,51 @@
-const express = require("express")
-const cors = require("cors");
-const bodyparser = require('body-parser');
-const app = express()
-const port = 4000
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { Pool } = require('pg');
+const app = express();
+const port = 5000;
 
-app.use(cors())
-app.use(bodyParser())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(cors());
 
+// PostgreSQL database connection configuration
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'postgres',
+  password: 'root',
+  port: 5432,
+});
 
-app.get('/',(req, res) => {
-    res.send("Hello world!")
-})
-app.get("/register", (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    res.send("Registration form recived for user")
-})
+pool.connect((err, client, done) => {
+  if (err) {
+    console.error('Error connecting to the database:', err);
+  } else {
+    console.log('Connected to the database');
+    done();
+  }
+});
 
-app.get("/login", (req, res) => {
-    res.send("Login Successful")
-})
+app.post('/register', (req, res) => {
+  const { username, email, password, balance } = req.body;
 
+  // Check if the username or email already exists in the database (optional)
+
+  const sql = 'INSERT INTO USERS (username, email, password, balance) VALUES ($1, $2, $3, $4)';
+  pool.query(sql, [username, email, password, balance], (err, result) => {
+    if (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ message: 'An error occurred' });
+    } else {
+      res.status(200).json({ message: 'User registered successfully' });
+    }
+  });
+});
 
 app.listen(port, () => {
-    console.log("My server is listening on port 4000")
-})
+  console.log(`Server is running on port ${port}`);
+});
 
 
 
